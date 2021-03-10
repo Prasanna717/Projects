@@ -1,0 +1,74 @@
+
+# importing libraries
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# importing datset
+data = pd.read_csv('Iris.csv')
+
+# splitting data into dependent and independent variables
+X = data.iloc[:, 1:5].values
+y = data.iloc[:, 5].values
+
+# printing and checking the splitting
+X[:5,:]
+y[:5,]
+
+# checking missing data and if detected it will be replaced nan with "mean"
+from sklearn.impute import SimpleImputer
+imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+imputer.fit(X[:, 1:5])
+X[:, 1:5] = imputer.transform(X[:, 1:5])
+
+# encoding of dependent variable
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+y = le.fit_transform(y)
+y
+
+# Splitting dataset into training and test sets
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1, random_state = 4)
+X_train
+X_test
+y_train
+y_test
+
+# Feature scaling of independent variables
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train[:, :] = sc.fit_transform(X_train[:, :])
+X_test[:, :] = sc.transform(X_test[:, :])
+X_train
+X_test
+
+# Training the model with train datasets
+from sklearn.tree import DecisionTreeClassifier
+classifier = DecisionTreeClassifier(criterion = 'gini', random_state = 0)
+classifier.fit(X_train, y_train)
+
+# predicting and printing single input data
+print(classifier.predict(sc.transform([[6.5,5.5,3.6,2.5]])))
+
+# Comparsions of predicted results and actual values
+y_pred = classifier.predict(X_test)
+print(np.concatenate((y_pred.reshape(len(y_pred),1), y_test.reshape(len(y_test),1)),1))
+
+# printing results using confusion matrix.
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+accuracy_score(y_test, y_pred)
+
+# visual representation of decision tree
+plt.figure(figsize=(25,20))
+clf = DecisionTreeClassifier().fit(X, y)
+plot_tree(clf, filled=True)
+plt.show()
+
+# representing the tree in textual representation
+from sklearn.tree import export_text
+from sklearn import tree
+text_representation = tree.export_text(clf)
+print(text_representation)
